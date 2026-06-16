@@ -20,14 +20,14 @@
 
 1. 克隆本仓库：
    ```bash
-   git clone https://github.com/fangxiaoxingit/newsToCard.git
+   git clone https://github.com/fangxiaoxingit/CutWebImage.git
    ```
 
 2. 打开 Chrome 浏览器，访问 `chrome://extensions/`
 
 3. 开启右上角 **开发者模式**
 
-4. 点击 **加载已解压的扩展程序**，选择 `newsToCard` 目录
+4. 点击 **加载已解压的扩展程序**，选择 `CutWebImage` 目录
 
 5. 扩展安装完成，所有网页右上角会出现绿色浮球
 
@@ -45,7 +45,7 @@
 ## 项目结构
 
 ```
-newsToCard/
+CutWebImage/
 ├── manifest.json                  # Chrome 扩展 Manifest V3 配置
 ├── background/
 │   └── service-worker.js          # Service Worker（截图 + IndexedDB 存储）
