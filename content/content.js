@@ -466,7 +466,7 @@
         console.warn('[CutWebImage] 保存历史记录失败:', e);
       }
 
-      showToast('success', '已复制到剪贴板 ✓');
+      showToast('success', '已复制到剪贴板');
     } catch (err) {
       console.error('[CutWebImage] 截图失败:', err);
       showToast('error', '截图失败: ' + err.message);

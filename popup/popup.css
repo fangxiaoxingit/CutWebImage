@@ -22,9 +22,11 @@ body {
   margin-bottom: 16px;
 }
 
-.header .icon {
-  font-size: 28px;
-  line-height: 1;
+.header .logo-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  object-fit: contain;
 }
 
 .header h1 {
