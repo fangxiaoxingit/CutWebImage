@@ -1,0 +1,18 @@
+/**
+ * NewsToCard - 全局注入样式
+ * 仅用于无法放入 Shadow DOM 的全局样式覆盖
+ * 注意：不使用 overflow:hidden，避免滚动位置丢失
+ */
+
+/* 截图模式下：光标变为十字、禁止文本选择 */
+body.ntc-capturing {
+  cursor: crosshair !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+}
+
+body.ntc-capturing * {
+  cursor: crosshair !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+}

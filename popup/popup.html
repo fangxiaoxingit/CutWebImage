@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="popup.css">
+  <title>NewsToCard</title>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="icon">✂️</div>
+      <h1>NewsToCard</h1>
+      <span class="version">v1.0.0</span>
+    </div>
+    <div class="divider"></div>
+    <button class="history-btn" id="btnHistory">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"/>
+        <polyline points="12 6 12 12 16 14"/>
+      </svg>
+      <span>历史记录</span>
+      <span class="history-count" id="historyCount">0</span>
+    </button>
+    <div class="content">
+      <h2>使用说明</h2>
+      <div class="steps">
+        <div class="step">
+          <span class="num">1</span>
+          <span class="text">点击页面右上角的<strong>紫色浮球</strong></span>
+        </div>
+        <div class="step">
+          <span class="num">2</span>
+          <span class="text">按住鼠标<strong>拖拽框选</strong>需要截图的区域</span>
+        </div>
+        <div class="step">
+          <span class="num">3</span>
+          <span class="text">松开鼠标，截图自动<strong>复制到剪贴板</strong></span>
+        </div>
+      </div>
+      <div class="tips">
+        <div class="tip">💡 拖拽浮球可移动位置</div>
+        <div class="tip">⎋ 按 Esc 取消截图</div>
+      </div>
+    </div>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html>
