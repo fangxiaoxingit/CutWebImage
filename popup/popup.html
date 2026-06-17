@@ -10,7 +10,7 @@
     <div class="header">
       <img class="logo-icon" src="../icons/icon48.png" alt="CutWebImage">
       <h1>CutWebImage</h1>
-      <span class="version">v1.0.0</span>
+      <span class="version">v1.1.0</span>
     </div>
     <div class="divider"></div>
     <button class="history-btn" id="btnHistory">
@@ -21,6 +21,28 @@
       <span>历史记录</span>
       <span class="history-count" id="historyCount">0</span>
     </button>
+    <div class="content">
+      <!-- 快捷键设置区域 -->
+      <h2>快捷键设置</h2>
+      <div class="shortcut-card">
+        <div class="shortcut-row">
+          <label class="toggle-switch">
+            <input type="checkbox" id="shortcutToggle">
+            <span class="toggle-slider"></span>
+          </label>
+          <span class="shortcut-display">Ctrl+Shift+<kbd id="shortcutKey">C</kbd></span>
+          <button class="btn-modify" id="btnModifyShortcut">修改</button>
+        </div>
+        <!-- 悬浮球显示设置（快捷键开启时可见） -->
+        <div class="shortcut-row ball-row" id="ballSettingRow" style="display:none;">
+          <label class="toggle-switch">
+            <input type="checkbox" id="ballToggle" checked>
+            <span class="toggle-slider"></span>
+          </label>
+          <span class="ball-label">显示悬浮球</span>
+        </div>
+      </div>
+    </div>
     <div class="content">
       <h2>使用说明</h2>
       <div class="steps">
@@ -40,6 +62,18 @@
       <div class="tips">
         <div class="tip">💡 拖拽浮球可移动位置</div>
         <div class="tip">⎋ 按 Esc 取消截图</div>
+      </div>
+    </div>
+  </div>
+  <!-- 字母输入弹窗 -->
+  <div class="modal-overlay" id="modifyModal" style="display:none;">
+    <div class="modal-box">
+      <p class="modal-title">输入一个字母作为快捷键</p>
+      <p class="modal-hint">快捷键格式：Ctrl+Shift+<span id="modalPreview">C</span></p>
+      <input type="text" class="modal-input" id="modalInput" maxlength="1" placeholder="A-Z" autocomplete="off">
+      <div class="modal-btns">
+        <button class="modal-btn modal-cancel" id="modalCancel">取消</button>
+        <button class="modal-btn modal-confirm" id="modalConfirm">确定</button>
       </div>
     </div>
   </div>

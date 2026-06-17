@@ -20,6 +20,11 @@
   let rafId = null;               // requestAnimationFrame ID
   let currentRect = null;         // 当前矩形选区 {left, top, width, height}
 
+  // 快捷键设置
+  let shortcutEnabled = false;   // 快捷键开关（默认关闭）
+  let shortcutKey = 'C';         // 快捷键字母键（默认 C）
+  let floatBallVisible = true;   // 悬浮球是否显示（默认开启）
+
   // DOM 引用
   let floatBall = null;           // 浮球元素 (shadow host)
   let overlay = null;             // 蒙版
@@ -96,6 +101,9 @@
     shadow.appendChild(style);
     shadow.appendChild(ballDiv);
     document.body.appendChild(floatBall);
+
+    // 确保符合可见性设置
+    applyFloatBallVisibility();
 
     // 事件绑定
     ballDiv.addEventListener('mousedown', onBallMouseDown, true);
@@ -269,7 +277,7 @@
     removeScrollBlockers();
 
     // 恢复浮球
-    if (floatBall) floatBall.style.display = '';
+    if (floatBall) applyFloatBallVisibility();
 
     // 清理事件
     document.removeEventListener('mousemove', onMouseMove, true);
@@ -473,7 +481,7 @@
     } finally {
       // 恢复浮球
       isCapturing = false;
-      if (floatBall) floatBall.style.display = '';
+      if (floatBall) applyFloatBallVisibility();
     }
   }
 
@@ -576,9 +584,77 @@
     }
   }
 
+  // ========== 快捷键模块 ==========
+
+  function loadShortcutSettings() {
+    try {
+      chrome.storage.local.get(['shortcutEnabled', 'shortcutKey', 'floatBallVisible'], (result) => {
+        if (chrome.runtime.lastError) return;
+        shortcutEnabled = result.shortcutEnabled === true;
+        shortcutKey = (result.shortcutKey || 'C').toUpperCase();
+        floatBallVisible = result.floatBallVisible !== false; // 默认 true
+        applyFloatBallVisibility();
+      });
+    } catch (e) { /* 非扩展页面可能报错 */ }
+  }
+
+  function applyFloatBallVisibility() {
+    if (!floatBall) return;
+    // 快捷键关闭时，悬浮球强制显示；快捷键开启时，按设置显示
+    const shouldShow = !shortcutEnabled || floatBallVisible;
+    floatBall.style.display = shouldShow ? '' : 'none';
+  }
+
+  function onStorageChanged(changes, areaName) {
+    if (areaName !== 'local') return;
+    if (changes.shortcutEnabled) {
+      shortcutEnabled = changes.shortcutEnabled.newValue === true;
+      applyFloatBallVisibility();
+    }
+    if (changes.shortcutKey) {
+      shortcutKey = (changes.shortcutKey.newValue || 'C').toUpperCase();
+    }
+    if (changes.floatBallVisible) {
+      floatBallVisible = changes.floatBallVisible.newValue !== false;
+      applyFloatBallVisibility();
+    }
+  }
+
+  function onShortcutKeyDown(e) {
+    // 未开启或已截图模式中，跳过
+    if (!shortcutEnabled || isCapturing) return;
+
+    // 排除输入框场景
+    const target = e.target;
+    if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) return;
+
+    // 匹配 Ctrl+Shift+[key]
+    if (e.ctrlKey && e.shiftKey && !e.altKey && !e.metaKey) {
+      const pressedKey = e.key.toUpperCase();
+      if (pressedKey === shortcutKey && pressedKey.length === 1 && pressedKey >= 'A' && pressedKey <= 'Z') {
+        e.preventDefault();
+        e.stopPropagation();
+        if (floatBall) {
+          enterCaptureMode();
+        }
+      }
+    }
+  }
+
   // ========== 初始化 ==========
 
   function init() {
+    // 加载快捷键设置
+    loadShortcutSettings();
+
+    // 监听设置变更（无需刷新页面即可生效）
+    try {
+      chrome.storage.onChanged.addListener(onStorageChanged);
+    } catch (e) { /* ignore */ }
+
+    // 注册全局快捷键监听
+    document.addEventListener('keydown', onShortcutKeyDown, true);
+
     // 等待 body 存在
     if (document.body) {
       createFloatBall();

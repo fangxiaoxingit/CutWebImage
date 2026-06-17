@@ -13,10 +13,25 @@
 - **图片预览** — 点击历史卡片可大图预览，支持复制/下载/跳转原文
 - **批量管理** — 历史列表支持全选、取消全选、批量删除
 - **轻量可靠** — 核心功能零依赖，仅导出功能使用 JSZip 打包；零构建配置，纯原生 JS 实现
+- **可配置快捷键** — 支持开启/关闭快捷键截图（默认 `Ctrl+Shift+C`），可自定义字母键，快捷键开启时可单独控制悬浮球显隐
 
 ## 安装使用
 
-### 本地加载
+### 直接下载（推荐）
+
+1. 前往 [Releases 页面](https://github.com/fangxiaoxingit/CutWebImage/releases) 下载最新版本的 `.zip` 文件
+
+2. 解压 zip 文件到本地任意目录
+
+3. 打开 Chrome 浏览器，访问 `chrome://extensions/`
+
+4. 开启右上角 **开发者模式**
+
+5. 点击 **加载已解压的扩展程序**，选择解压后的目录
+
+6. 扩展安装完成，所有网页右上角会出现绿色浮球
+
+### 本地加载（开发）
 
 1. 克隆本仓库：
    ```bash
@@ -39,18 +54,34 @@
 | 鼠标拖拽 | 画矩形选区，实时显示宽高尺寸 |
 | 松开鼠标 | 截图自动复制到剪贴板，Toast 提示成功 |
 | 拖拽浮球 | 移动浮球位置，松手自动吸附边缘 |
+| `Ctrl+Shift+C` | 快捷键进入截图模式（需在 Popup 中开启） |
 | 按 Esc | 取消截图，退出截图模式 |
-| 点击工具栏图标 | 打开 Popup 面板，进入历史记录 |
+| 点击工具栏图标 | 打开 Popup 面板，管理快捷键设置和历史记录 |
+
+### 快捷键设置
+
+点击工具栏图标打开 Popup，可配置：
+
+| 设置项 | 说明 |
+|--------|------|
+| 快捷键开关 | 默认关闭，开启后在任意网页按快捷键即可进入截图模式 |
+| 自定义字母键 | 默认 `C`，可修改为 A-Z 任意字母，快捷键格式为 `Ctrl+Shift+[字母]` |
+| 悬浮球显示 | 仅在快捷键开启时可见，可单独控制悬浮球显隐 |
+
+> 快捷键关闭时，悬浮球强制显示，确保始终有截图入口。
 
 ## 项目结构
 
 ```
 CutWebImage/
 ├── manifest.json                  # Chrome 扩展 Manifest V3 配置
+├── .github/
+│   └── workflows/
+│       └── package.yml            # GitHub Actions 自动打包工作流
 ├── background/
 │   └── service-worker.js          # Service Worker（截图 + IndexedDB 存储）
 ├── content/
-│   ├── content.js                 # 内容脚本（浮球、蒙版、框选、裁剪、Toast）
+│   ├── content.js                 # 内容脚本（浮球、蒙版、框选、裁剪、快捷键、Toast）
 │   └── content.css                # 全局注入样式
 ├── history/
 │   ├── history.html               # 历史记录页面
@@ -60,9 +91,9 @@ CutWebImage/
 │   ├── storage.js                 # IndexedDB 存储模块
 │   └── jszip.min.js               # JSZip 库（批量导出打包）
 ├── popup/
-│   ├── popup.html                 # 工具栏弹窗
+│   ├── popup.html                 # 工具栏弹窗（含快捷键设置 UI）
 │   ├── popup.css                  # 弹窗样式
-│   └── popup.js                   # 弹窗逻辑
+│   └── popup.js                   # 弹窗逻辑（历史记录 + 快捷键设置）
 └── icons/
     ├── icon16.png
     ├── icon48.png
@@ -93,6 +124,7 @@ CutWebImage 尊重并保护您的隐私：
 | `activeTab` | 仅用于截取当前页面可见区域 |
 | `clipboardWrite` | 仅用于将截图图片写入系统剪贴板 |
 | `unlimitedStorage` | 用于本地 IndexedDB 存储截图历史 |
+| `storage` | 用于存储快捷键开关、自定义字母键、悬浮球显隐等用户设置 |
 | `<all_urls>` | 用于在所有网页上注入浮球和截图功能 |
 
 ## License

@@ -2,11 +2,12 @@
   "manifest_version": 3,
   "name": "CutWebImage - 网页截图工具",
   "description": "点击浮球，拖拽框选网页区域，截图复制到剪贴板",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "permissions": [
     "activeTab",
     "clipboardWrite",
-    "unlimitedStorage"
+    "unlimitedStorage",
+    "storage"
   ],
   "host_permissions": [
     "<all_urls>"
