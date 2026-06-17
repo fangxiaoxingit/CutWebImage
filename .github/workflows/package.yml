@@ -1,0 +1,81 @@
+name: Package Extension
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  package:
+    name: Package & Release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # -------------------------------------------------------
+      # Step 1: Read version from manifest.json
+      # -------------------------------------------------------
+      - name: Extract version from manifest.json
+        id: version
+        run: |
+          VERSION=$(jq -r '.version' manifest.json)
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "Detected version: ${VERSION}"
+
+      # -------------------------------------------------------
+      # Step 2: Validate tag matches manifest version (tag push only)
+      # -------------------------------------------------------
+      - name: Validate tag matches manifest version
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          TAG_VERSION="${GITHUB_REF#refs/tags/v}"
+          MANIFEST_VERSION="${{ steps.version.outputs.version }}"
+          if [ "$TAG_VERSION" != "$MANIFEST_VERSION" ]; then
+            echo "::error::Tag version (v${TAG_VERSION}) does not match manifest.json version (${MANIFEST_VERSION})"
+            exit 1
+          fi
+          echo "Tag and manifest versions match: v${MANIFEST_VERSION}"
+
+      # -------------------------------------------------------
+      # Step 3: Package extension into zip
+      # Excludes dev-only files from the archive
+      # -------------------------------------------------------
+      - name: Package extension into zip
+        run: |
+          zip -r "CutWebImage-v${{ steps.version.outputs.version }}.zip" . \
+            -x ".git/*" \
+            -x ".github/*" \
+            -x ".gitignore" \
+            -x ".DS_Store" \
+            -x "*.swp" \
+            -x "*.swo" \
+            -x "*~" \
+            -x "README.md" \
+            -x "LICENSE"
+
+      # -------------------------------------------------------
+      # Step 4: Upload build artifact (all runs)
+      # -------------------------------------------------------
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: CutWebImage-v${{ steps.version.outputs.version }}
+          path: CutWebImage-v${{ steps.version.outputs.version }}.zip
+          retention-days: 30
+
+      # -------------------------------------------------------
+      # Step 5: Create GitHub Release (tag push only)
+      # -------------------------------------------------------
+      - name: Create GitHub Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: CutWebImage-v${{ steps.version.outputs.version }}.zip
+          generate_release_notes: true
+          name: CutWebImage v${{ steps.version.outputs.version }}
