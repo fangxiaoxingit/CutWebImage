@@ -5,78 +5,90 @@
   <link rel="stylesheet" href="popup.css">
   <title>CutWebImage</title>
 </head>
-<body>
+<body class="i18n-loading">
   <div class="container">
     <div class="header">
       <img class="logo-icon" src="../icons/icon48.png" alt="CutWebImage">
       <h1>CutWebImage</h1>
-      <span class="version">v1.1.0</span>
+      <span class="version">v1.2.0</span>
     </div>
     <div class="divider"></div>
     <button class="history-btn" id="btnHistory">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <circle cx="12" cy="12" r="10"/>
         <polyline points="12 6 12 12 16 14"/>
       </svg>
-      <span>历史记录</span>
+      <span data-i18n="popupHistory">历史记录</span>
       <span class="history-count" id="historyCount">0</span>
     </button>
     <div class="content">
       <!-- 快捷键设置区域 -->
-      <h2>快捷键设置</h2>
+      <h2 data-i18n="popupShortcutSettings">快捷键设置</h2>
       <div class="shortcut-card">
         <div class="shortcut-row">
           <label class="toggle-switch">
-            <input type="checkbox" id="shortcutToggle">
+            <input type="checkbox" id="shortcutToggle" aria-label="启用快捷键" data-i18n-aria-label="popupEnableShortcut">
             <span class="toggle-slider"></span>
           </label>
           <span class="shortcut-display">Ctrl+Shift+<kbd id="shortcutKey">C</kbd></span>
-          <button class="btn-modify" id="btnModifyShortcut">修改</button>
+          <button class="btn-modify" id="btnModifyShortcut" data-i18n="popupModify">修改</button>
         </div>
         <!-- 悬浮球显示设置（快捷键开启时可见） -->
         <div class="shortcut-row ball-row" id="ballSettingRow" style="display:none;">
           <label class="toggle-switch">
-            <input type="checkbox" id="ballToggle" checked>
+            <input type="checkbox" id="ballToggle" checked aria-label="显示悬浮球" data-i18n-aria-label="popupShowBall">
             <span class="toggle-slider"></span>
           </label>
-          <span class="ball-label">显示悬浮球</span>
+          <label class="ball-label" for="ballToggle" data-i18n="popupShowBall">显示悬浮球</label>
         </div>
       </div>
     </div>
+    <div class="language-section">
+      <div class="language-setting">
+        <label for="languagePreference" data-i18n="languageLabel">语言</label>
+        <select id="languagePreference" aria-describedby="languageError">
+          <option value="auto" data-i18n="languageAuto">跟随浏览器</option>
+          <option value="zh-CN" data-i18n="languageChinese">中文（简体）</option>
+          <option value="en" data-i18n="languageEnglish">English</option>
+        </select>
+      </div>
+      <p class="language-error" id="languageError" role="status" hidden></p>
+    </div>
     <div class="content">
-      <h2>使用说明</h2>
+      <h2 data-i18n="popupInstructions">使用说明</h2>
       <div class="steps">
         <div class="step">
           <span class="num">1</span>
-          <span class="text">点击页面右上角的<strong>绿色浮球</strong></span>
+          <span class="text"><span data-i18n="popupStep1Before">点击页面右上角的</span><strong data-i18n="popupStep1Strong">绿色浮球</strong><span data-i18n="popupStep1After"></span></span>
         </div>
         <div class="step">
           <span class="num">2</span>
-          <span class="text">按住鼠标<strong>拖拽框选</strong>需要截图的区域</span>
+          <span class="text"><span data-i18n="popupStep2Before">按住鼠标</span><strong data-i18n="popupStep2Strong">拖拽框选</strong><span data-i18n="popupStep2After">需要截图的区域</span></span>
         </div>
         <div class="step">
           <span class="num">3</span>
-          <span class="text">松开鼠标，截图自动<strong>复制到剪贴板</strong></span>
+          <span class="text"><span data-i18n="popupStep3Before">松开鼠标，截图自动</span><strong data-i18n="popupStep3Strong">复制到剪贴板</strong><span data-i18n="popupStep3After"></span></span>
         </div>
       </div>
       <div class="tips">
-        <div class="tip">💡 拖拽浮球可移动位置</div>
-        <div class="tip">⎋ 按 Esc 取消截图</div>
+        <div class="tip">💡 <span data-i18n="popupMoveBallTip">拖拽浮球可移动位置</span></div>
+        <div class="tip">⎋ <span data-i18n="popupCancelTip">按 Esc 取消截图</span></div>
       </div>
     </div>
   </div>
   <!-- 字母输入弹窗 -->
   <div class="modal-overlay" id="modifyModal" style="display:none;">
-    <div class="modal-box">
-      <p class="modal-title">输入一个字母作为快捷键</p>
-      <p class="modal-hint">快捷键格式：Ctrl+Shift+<span id="modalPreview">C</span></p>
-      <input type="text" class="modal-input" id="modalInput" maxlength="1" placeholder="A-Z" autocomplete="off">
+    <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <p class="modal-title" id="modalTitle" data-i18n="popupShortcutPrompt">输入一个字母作为快捷键</p>
+      <p class="modal-hint"><span class="modal-hint-label" data-i18n="popupShortcutFormat">快捷键格式：Ctrl+Shift+</span><span id="modalPreview">C</span></p>
+      <input type="text" class="modal-input" id="modalInput" maxlength="1" placeholder="A-Z" autocomplete="off" aria-labelledby="modalTitle">
       <div class="modal-btns">
-        <button class="modal-btn modal-cancel" id="modalCancel">取消</button>
-        <button class="modal-btn modal-confirm" id="modalConfirm">确定</button>
+        <button class="modal-btn modal-cancel" id="modalCancel" data-i18n="commonCancel">取消</button>
+        <button class="modal-btn modal-confirm" id="modalConfirm" data-i18n="commonConfirm">确定</button>
       </div>
     </div>
   </div>
+  <script src="../lib/i18n.js"></script>
   <script src="popup.js"></script>
 </body>
 </html>

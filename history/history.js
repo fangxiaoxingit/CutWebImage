@@ -5,6 +5,9 @@
 (function () {
   'use strict';
 
+  const i18n = globalThis.CutWebImageI18n;
+  const t = (key, params) => i18n.t(key, params);
+
   // DOM 引用
   const grid = document.getElementById('grid');
   const emptyState = document.getElementById('emptyState');
@@ -29,6 +32,8 @@
   let selectedIds = new Set();
   let currentPreview = null; // 当前预览的记录
   let objectUrls = []; // 跟踪 object URL 以便释放
+  const cardElements = new Map();
+  const activeToasts = new Map();
 
   // ========== 加载数据 ==========
 
@@ -40,7 +45,7 @@
       render();
     } catch (err) {
       console.error('加载历史记录失败:', err);
-      showToast('加载失败: ' + err.message, 'error');
+      showToast('historyLoadFailed', { error: errorMessage(err) }, 'error');
     } finally {
       showLoading(false);
     }
@@ -51,22 +56,22 @@
   function render() {
     // 释放旧的 object URLs
     revokeObjectUrls();
+    grid.innerHTML = '';
+    cardElements.clear();
+    updateCountBadge();
 
     if (snapshots.length === 0) {
       grid.style.display = 'none';
       emptyState.style.display = '';
-      countBadge.textContent = '0';
       updateToolbar();
       return;
     }
 
     emptyState.style.display = 'none';
     grid.style.display = '';
-    countBadge.textContent = snapshots.length;
-
-    grid.innerHTML = '';
     snapshots.forEach((item, index) => {
       const card = createCardElement(item, index + 1);
+      cardElements.set(item.id, { card, item });
       grid.appendChild(card);
     });
 
@@ -82,20 +87,17 @@
     const imgUrl = URL.createObjectURL(item.blob);
     objectUrls.push(imgUrl);
 
-    const time = formatTime(item.timestamp);
-    const urlShort = truncateUrl(item.url);
-
     card.innerHTML = `
       <div class="card-checkbox" data-action="select"></div>
       <div class="card-index">#${displayIndex}</div>
       <div class="card-image">
-        <img src="${imgUrl}" alt="截图 #${item.id}" loading="lazy">
+        <img src="${escapeHtml(imgUrl)}" alt="" loading="lazy">
       </div>
       <div class="card-info">
         <div class="card-info-left">
-          <div class="card-title" title="${escapeHtml(item.title || '')}">${escapeHtml(item.title || '无标题')}</div>
-          <div class="card-size">${item.width} × ${item.height}</div>
-          <div class="card-time">${time}</div>
+          <div class="card-title" title="${escapeHtml(item.title || '')}">${escapeHtml(item.title || '')}</div>
+          <div class="card-size">${escapeHtml(item.width)} × ${escapeHtml(item.height)}</div>
+          <div class="card-time"></div>
         </div>
         <div class="card-info-right">
           <a class="card-link-btn" href="${escapeHtml(item.url)}" target="_blank" data-action="url" title="${escapeHtml(item.url)}">
@@ -108,6 +110,7 @@
         </div>
       </div>
     `;
+    localizeCard(card, item);
 
     // 点击事件
     card.addEventListener('click', (e) => {
@@ -124,6 +127,37 @@
     });
 
     return card;
+  }
+
+  function localizeCard(card, item) {
+    const title = item.title || t('historyUntitled');
+    const titleElement = card.querySelector('.card-title');
+    titleElement.textContent = title;
+    titleElement.title = title;
+    card.querySelector('.card-time').textContent = formatTime(item.timestamp);
+    card.querySelector('.card-image img').alt = t('historySnapshotAlt', { id: item.id });
+    card.querySelector('.card-checkbox').setAttribute('aria-label', t('historySelectSnapshot', { id: item.id }));
+    const link = card.querySelector('.card-link-btn');
+    link.title = t('historyOpenUrlTitle', { url: item.url || '' });
+    link.setAttribute('aria-label', t('historyOpenUrl'));
+  }
+
+  function updateCountBadge() {
+    countBadge.textContent = new Intl.NumberFormat(i18n.getLocale()).format(snapshots.length);
+    const label = t('historyRecordsCount', { count: snapshots.length });
+    countBadge.title = label;
+    countBadge.setAttribute('aria-label', label);
+  }
+
+  function localizeUI() {
+    i18n.localize();
+    cardElements.forEach(({ card, item }) => localizeCard(card, item));
+    updateCountBadge();
+    updateToolbar();
+    updatePreviewInfo();
+    activeToasts.forEach(({ key, params }, toast) => {
+      toast.textContent = t(key, params);
+    });
   }
 
   // ========== 选择操作 ==========
@@ -151,7 +185,7 @@
   }
 
   function updateCardSelection(id) {
-    const card = document.querySelector(`.card[data-id="${id}"]`);
+    const card = cardElements.get(id)?.card;
     if (card) {
       card.classList.toggle('selected', selectedIds.has(id));
     }
@@ -161,15 +195,14 @@
     const hasSelection = selectedIds.size > 0;
     btnDeleteSelected.disabled = !hasSelection;
     btnExportSelected.disabled = !hasSelection;
-    if (hasSelection) {
-      btnDeleteSelected.querySelector('svg').nextSibling.textContent =
-        ` 清除已选(${selectedIds.size})`;
-      btnExportSelected.querySelector('svg').nextSibling.textContent =
-        ` 导出已选(${selectedIds.size})`;
-    } else {
-      btnDeleteSelected.querySelector('svg').nextSibling.textContent = ' 清除已选';
-      btnExportSelected.querySelector('svg').nextSibling.textContent = ' 导出已选';
-    }
+    btnDeleteSelected.querySelector('span').textContent = t(
+      hasSelection ? 'historyDeleteSelectedCount' : 'historyDeleteSelected',
+      { count: selectedIds.size }
+    );
+    btnExportSelected.querySelector('span').textContent = t(
+      hasSelection ? 'historyExportSelectedCount' : 'historyExportSelected',
+      { count: selectedIds.size }
+    );
   }
 
   // ========== 删除 ==========
@@ -177,14 +210,14 @@
   async function deleteSelected() {
     if (selectedIds.size === 0) return;
     const count = selectedIds.size;
-    if (!confirm(`确定删除 ${count} 条记录吗？`)) return;
+    if (!confirm(t('historyDeleteConfirm', { count }))) return;
 
     try {
       await deleteSnapshots([...selectedIds]);
-      showToast(`已删除 ${count} 条记录`, 'success');
+      showToast('historyDeleted', { count }, 'success');
       await loadSnapshots();
     } catch (err) {
-      showToast('删除失败: ' + err.message, 'error');
+      showToast('historyDeleteFailed', { error: errorMessage(err) }, 'error');
     }
   }
 
@@ -198,7 +231,7 @@
       .sort((a, b) => a.timestamp - b.timestamp); // 按时间正序编号
 
     const count = selectedItems.length;
-    showToast(`正在打包 ${count} 张截图...`);
+    showToast('historyPacking', { count });
 
     try {
       const zip = new JSZip();
@@ -216,14 +249,14 @@
       const a = document.createElement('a');
       a.href = url;
       const dateStr = new Date().toISOString().slice(0, 10);
-      a.download = `CutWebImage_${dateStr}_${count}张.zip`;
+      a.download = `CutWebImage_${dateStr}_${count}.zip`;
       a.click();
       setTimeout(() => URL.revokeObjectURL(url), 5000);
 
-      showToast(`已导出 ${count} 张截图`, 'success');
+      showToast('historyExported', { count }, 'success');
     } catch (err) {
       console.error('[CutWebImage] 导出失败:', err);
-      showToast('导出失败: ' + err.message, 'error');
+      showToast('historyExportFailed', { error: errorMessage(err) }, 'error');
     }
   }
 
@@ -241,8 +274,16 @@
     currentPreview = item;
     const imgUrl = URL.createObjectURL(item.blob);
     modalImg.src = imgUrl;
-    modalInfo.textContent = `${item.width} × ${item.height} · ${formatTime(item.timestamp)}`;
+    updatePreviewInfo();
     previewModal.classList.add('active');
+  }
+
+  function updatePreviewInfo() {
+    modalImg.alt = currentPreview
+      ? t('historySnapshotAlt', { id: currentPreview.id })
+      : t('historyPreview');
+    if (!currentPreview) return;
+    modalInfo.textContent = `${currentPreview.width} × ${currentPreview.height} · ${formatTime(currentPreview.timestamp)}`;
   }
 
   function closePreview() {
@@ -264,9 +305,9 @@
       await navigator.clipboard.write([
         new ClipboardItem({ 'image/png': pngBlob })
       ]);
-      showToast('已复制到剪贴板', 'success');
+      showToast('historyCopied', {}, 'success');
     } catch (err) {
-      showToast('复制失败: ' + err.message, 'error');
+      showToast('historyCopyFailed', { error: errorMessage(err) }, 'error');
     }
   }
 
@@ -278,7 +319,7 @@
         canvas.width = img.naturalWidth;
         canvas.height = img.naturalHeight;
         canvas.getContext('2d').drawImage(img, 0, 0);
-        canvas.toBlob(b => b ? resolve(b) : reject(new Error('PNG 转换失败')), 'image/png');
+        canvas.toBlob(b => b ? resolve(b) : reject(new Error(t('historyPngConversionFailed'))), 'image/png');
         URL.revokeObjectURL(img.src);
       };
       img.onerror = reject;
@@ -315,46 +356,46 @@
   function formatTime(timestamp) {
     const d = new Date(timestamp);
     const now = new Date();
+    const locale = i18n.getLocale();
+    const time = new Intl.DateTimeFormat(locale, {
+      hour: '2-digit', minute: '2-digit', hourCycle: 'h23'
+    }).format(d);
     const isToday = d.toDateString() === now.toDateString();
 
     if (isToday) {
-      return `今天 ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+      return t('historyTodayTime', { time });
     }
 
     const yesterday = new Date(now);
     yesterday.setDate(yesterday.getDate() - 1);
     if (d.toDateString() === yesterday.toDateString()) {
-      return `昨天 ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+      return t('historyYesterdayTime', { time });
     }
 
-    return `${d.getMonth() + 1}/${d.getDate()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
-  }
-
-  function pad(n) {
-    return n.toString().padStart(2, '0');
-  }
-
-  function truncateUrl(url) {
-    if (!url) return '';
-    try {
-      const u = new URL(url);
-      return u.hostname + (u.pathname.length > 20 ? u.pathname.slice(0, 20) + '...' : u.pathname);
-    } catch {
-      return url.length > 40 ? url.slice(0, 40) + '...' : url;
-    }
+    return new Intl.DateTimeFormat(locale, {
+      month: 'numeric', day: 'numeric',
+      hour: '2-digit', minute: '2-digit', hourCycle: 'h23'
+    }).format(d);
   }
 
   function escapeHtml(str) {
-    if (!str) return '';
-    return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    return String(str ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
   }
 
-  function showToast(msg, type) {
+  function errorMessage(err) {
+    return err?.message || t('historyUnknownError');
+  }
+
+  function showToast(key, params = {}, type) {
     const toast = document.createElement('div');
     toast.className = 'toast-msg' + (type ? ' ' + type : '');
-    toast.textContent = msg;
+    toast.textContent = t(key, params);
+    activeToasts.set(toast, { key, params });
     document.body.appendChild(toast);
-    setTimeout(() => toast.remove(), type === 'error' ? 4000 : 2000);
+    setTimeout(() => {
+      activeToasts.delete(toast);
+      toast.remove();
+    }, type === 'error' ? 4000 : 2000);
   }
 
   // ========== 事件绑定 ==========
@@ -378,6 +419,14 @@
   });
 
   // ========== 初始化 ==========
-  loadSnapshots();
+  async function init() {
+    await i18n.init();
+    localizeUI();
+    document.body.classList.remove('i18n-loading');
+    i18n.onChange(localizeUI);
+    await loadSnapshots();
+  }
+
+  init();
 
 })();

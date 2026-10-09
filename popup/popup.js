@@ -6,6 +6,46 @@
 const DB_NAME = 'CutWebImageDB';
 const DB_VERSION = 1;
 const STORE_NAME = 'snapshots';
+const i18n = globalThis.CutWebImageI18n;
+const languagePreference = document.getElementById('languagePreference');
+const languageError = document.getElementById('languageError');
+let languageSaveFailed = false;
+
+function renderLocale() {
+  i18n.localize(document);
+  languagePreference.value = i18n.getPreference();
+  languageError.hidden = !languageSaveFailed;
+  languageError.textContent = languageSaveFailed ? i18n.t('languageSaveFailed') : '';
+}
+
+async function initializeLocale() {
+  try {
+    await i18n.init();
+    renderLocale();
+    i18n.onChange(renderLocale);
+  } catch (err) {
+    console.error('Could not initialize popup language:', err);
+  } finally {
+    document.body.classList.remove('i18n-loading');
+  }
+}
+
+languagePreference.addEventListener('change', async () => {
+  languagePreference.disabled = true;
+  languageSaveFailed = false;
+  languageError.hidden = true;
+  try {
+    await i18n.setPreference(languagePreference.value);
+  } catch (err) {
+    languageSaveFailed = true;
+    console.error('Could not save popup language:', err);
+  } finally {
+    renderLocale();
+    languagePreference.disabled = false;
+  }
+});
+
+initializeLocale();
 
 // 历史记录按钮
 document.getElementById('btnHistory').addEventListener('click', () => {

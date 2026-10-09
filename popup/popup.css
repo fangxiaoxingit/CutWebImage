@@ -11,6 +11,22 @@ body {
   color: #333;
 }
 
+body.i18n-loading {
+  visibility: hidden;
+}
+
+button,
+select,
+input {
+  font: inherit;
+}
+
+button:focus-visible,
+select:focus-visible {
+  outline: 2px solid #468432;
+  outline-offset: 3px;
+}
+
 .container {
   padding: 20px;
 }
@@ -182,6 +198,7 @@ body {
   color: #444;
   font-weight: 500;
   flex: 1;
+  white-space: nowrap;
 }
 
 .shortcut-display kbd {
@@ -225,6 +242,47 @@ body {
   font-size: 13px;
   color: #444;
   font-weight: 500;
+  cursor: pointer;
+}
+
+.language-section {
+  margin-bottom: 16px;
+}
+
+.language-setting {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.language-setting label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #666;
+  flex-shrink: 0;
+}
+
+.language-setting select {
+  min-width: 0;
+  flex: 1;
+  padding: 7px 9px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  background: #fff;
+  color: #333;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.language-setting select:disabled {
+  cursor: wait;
+}
+
+.language-error {
+  margin-top: 6px;
+  font-size: 12px;
+  line-height: 1.4;
+  color: #c53434;
 }
 
 /* Toggle 开关 */
@@ -275,6 +333,11 @@ body {
   transform: translateX(16px);
 }
 
+.toggle-switch input:focus-visible + .toggle-slider {
+  outline: 2px solid #468432;
+  outline-offset: 3px;
+}
+
 /* ========== 字母输入弹窗 ========== */
 
 .modal-overlay {
@@ -294,7 +357,8 @@ body {
   background: #fff;
   border-radius: 12px;
   padding: 20px;
-  width: 240px;
+  width: 280px;
+  max-width: calc(100% - 40px);
   box-shadow: 0 8px 30px rgba(0,0,0,0.2);
   display: flex;
   flex-direction: column;
@@ -314,7 +378,7 @@ body {
   text-align: center;
 }
 
-.modal-hint span {
+.modal-hint #modalPreview {
   font-family: 'SF Mono', 'Menlo', 'Consolas', monospace;
   font-weight: 700;
   color: #468432;

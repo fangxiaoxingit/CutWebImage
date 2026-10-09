@@ -16,6 +16,7 @@ A Chrome browser extension: click the floating ball, drag to select an area, and
 - **Batch Management** — History list supports select all, deselect all, and batch delete
 - **Lightweight & Reliable** — Zero dependencies for core features; only JSZip used for batch export; pure vanilla JS, no build step required
 - **Configurable Shortcut** — Enable/disable keyboard shortcut (default `Ctrl+Shift+C`); customize the letter key; control floating ball visibility when shortcut is on
+- **English and Chinese UI** — Follows your browser language by default; switch to English or Chinese in the popup, with live updates to history and capture messages
 
 ## Installation
 
@@ -72,11 +73,26 @@ Click the toolbar icon to open the Popup and configure:
 
 > When the shortcut is disabled, the floating ball is always shown to ensure a capture entry point is available.
 
+### Language Settings
+
+Click the extension's toolbar icon and use the language selector in the popup:
+
+| Option | Behavior |
+|--------|----------|
+| Follow browser (default) | Uses the first supported browser language preference, then checks the browser's primary and UI language; falls back to English if none is supported |
+| 中文 | Always uses Simplified Chinese for the popup, history page, and capture messages |
+| English | Always uses English for the popup, history page, and capture messages |
+
+Your manual choice is saved locally in the extension's settings for this browser and persists across popup openings and browser restarts. Select **Follow browser** to restore automatic detection. Chinese variants such as `zh-CN`, `zh-TW`, and `zh-HK` all use the Simplified Chinese interface. Switching languages preserves screenshots, selected history items, and shortcut settings. Captured page titles retain their original text.
+
+Chrome controls the extension name and description on its extensions management page using the browser's UI language; the popup's manual language setting applies to the extension's own interface. After updating, reload the extension at `chrome://extensions/` and refresh existing web pages to load the new language module.
+
 ## Project Structure
 
 ```
 CutWebImage/
 ├── manifest.json                  # Chrome Extension Manifest V3 config
+├── _locales/                      # English and Chinese extension name and description
 ├── .github/
 │   └── workflows/
 │       └── package.yml            # GitHub Actions auto-package workflow
@@ -90,6 +106,7 @@ CutWebImage/
 │   ├── history.css                # History page styles
 │   └── history.js                 # History page logic
 ├── lib/
+│   ├── i18n.js                    # Shared translations, language detection, and settings sync
 │   ├── storage.js                 # IndexedDB storage module
 │   └── jszip.min.js               # JSZip library (batch export)
 ├── popup/
@@ -126,8 +143,18 @@ CutWebImage respects and protects your privacy:
 | `activeTab` | Only used to capture the visible area of the current page |
 | `clipboardWrite` | Only used to write screenshot images to the system clipboard |
 | `unlimitedStorage` | Used for local IndexedDB storage of screenshot history |
-| `storage` | Used to store user settings: shortcut toggle, custom letter key, floating ball visibility |
+| `storage` | Used to store user settings: interface language, shortcut toggle, custom letter key, floating ball visibility |
 | `<all_urls>` | Used to inject the floating ball and capture functionality on all web pages |
+
+## Development Checks
+
+No build step is required. Run the automated checks for browser language detection, saved preferences, cross-page updates, and storage failure fallback with Node.js:
+
+```bash
+node --test tests/*.test.cjs
+```
+
+After loading the extension in Chrome, check the popup, shortcut editor, empty history page, image preview, batch actions, and capture messages in both English and Chinese.
 
 ## License
 

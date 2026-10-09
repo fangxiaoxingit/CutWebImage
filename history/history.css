@@ -12,6 +12,10 @@ body {
   min-height: 100vh;
 }
 
+body.i18n-loading {
+  visibility: hidden;
+}
+
 /* ========== 顶部栏 ========== */
 .topbar {
   position: sticky;
@@ -20,8 +24,10 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 56px;
-  padding: 0 24px;
+  flex-wrap: wrap;
+  gap: 10px 20px;
+  min-height: 56px;
+  padding: 10px 24px;
   background: #fff;
   border-bottom: 1px solid #e8e8e8;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
@@ -31,6 +37,7 @@ body {
   display: flex;
   align-items: center;
   gap: 10px;
+  flex-shrink: 0;
 }
 
 .logo-icon {
@@ -66,6 +73,8 @@ body {
 .topbar-right {
   display: flex;
   align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
   gap: 4px;
 }
 
@@ -434,6 +443,8 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
   border-top: 1px solid #eee;
 }
 
@@ -444,6 +455,9 @@ body {
 
 .modal-actions {
   display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  margin-left: auto;
   gap: 8px;
 }
 
@@ -454,6 +468,9 @@ body {
   left: 50%;
   transform: translateX(-50%);
   padding: 10px 24px;
+  max-width: calc(100vw - 32px);
+  overflow-wrap: anywhere;
+  text-align: center;
   border-radius: 8px;
   background: #333;
   color: #fff;

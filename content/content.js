@@ -9,6 +9,7 @@
   // 防止重复注入
   if (window.__cwiInjected) return;
   window.__cwiInjected = true;
+  const i18n = CutWebImageI18n;
 
   // ========== 状态变量 ==========
   let isCapturing = false;        // 是否处于截图模式
@@ -27,10 +28,30 @@
 
   // DOM 引用
   let floatBall = null;           // 浮球元素 (shadow host)
+  let floatBallButton = null;
   let overlay = null;             // 蒙版
   let selectionRect = null;       // 矩形选择框
   let sizeLabel = null;           // 尺寸标签
   let toastHost = null;           // Toast shadow host
+  let toastMessage = null;
+  let toastKey = null;
+  let toastParams = {};
+
+  function refreshLanguage() {
+    if (floatBall) {
+      floatBall.lang = i18n.getLocale();
+      floatBall.title = i18n.t('captureStart');
+    }
+    if (floatBallButton) floatBallButton.title = i18n.t('captureStart');
+    if (toastHost && toastMessage) {
+      toastHost.lang = i18n.getLocale();
+      const message = i18n.t(toastKey, toastParams);
+      toastMessage.textContent = message;
+      toastHost.setAttribute('aria-label', message);
+    }
+  }
+
+  i18n.onChange(refreshLanguage);
 
   // ========== 浮球模块 ==========
 
@@ -93,6 +114,7 @@
 
     // 剪刀图标 SVG
     const ballDiv = document.createElement('div');
+    floatBallButton = ballDiv;
     ballDiv.className = 'ball';
     ballDiv.innerHTML = `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
       <path d="M9.64 7.64c.23-.5.36-1.05.36-1.64 0-2.21-1.79-4-4-4S2 3.79 2 6s1.79 4 4 4c.59 0 1.14-.13 1.64-.36L10 12l-2.36 2.36C7.14 14.13 6.59 14 6 14c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4c0-.59-.13-1.14-.36-1.64L12 14l7 7h3v-1L9.64 7.64zM6 8c-1.1 0-2-.89-2-2s.9-2 2-2 2 .89 2 2-.9 2-2 2zm0 12c-1.1 0-2-.89-2-2s.9-2 2-2 2 .89 2 2-.9 2-2 2zM19 3l-6 6 2 2 7-7V3h-3z"/>
@@ -101,6 +123,7 @@
     shadow.appendChild(style);
     shadow.appendChild(ballDiv);
     document.body.appendChild(floatBall);
+    refreshLanguage();
 
     // 确保符合可见性设置
     applyFloatBallVisibility();
@@ -417,7 +440,7 @@
   // ========== 截图 + 裁剪 + 剪贴板 ==========
 
   async function performCapture(rect) {
-    showToast('loading', '正在截图...');
+    showToast('loading', 'captureLoading');
 
     try {
       // 等一帧让蒙版完全移除
@@ -429,7 +452,7 @@
       const response = await chrome.runtime.sendMessage({ type: 'CAPTURE_VISIBLE_TAB' });
 
       if (!response || response.error || !response.dataUrl) {
-        throw new Error(response?.error || '截图失败');
+        throw new Error(response?.error || i18n.t('captureUnavailable'));
       }
 
       // 加载截图
@@ -451,7 +474,7 @@
 
       // 剪贴板写入（仅支持 PNG 格式）
       const pngBlob = await new Promise((resolve, reject) => {
-        canvas.toBlob(b => b ? resolve(b) : reject(new Error('toBlob 失败')), 'image/png');
+        canvas.toBlob(b => b ? resolve(b) : reject(new Error(i18n.t('capturePngFailed'))), 'image/png');
       });
       await navigator.clipboard.write([
         new ClipboardItem({ 'image/png': pngBlob })
@@ -474,10 +497,10 @@
         console.warn('[CutWebImage] 保存历史记录失败:', e);
       }
 
-      showToast('success', '已复制到剪贴板');
+      showToast('success', 'captureCopied');
     } catch (err) {
       console.error('[CutWebImage] 截图失败:', err);
-      showToast('error', '截图失败: ' + err.message);
+      showToast('error', 'captureFailed', { error: err.message || i18n.t('captureUnknownError') });
     } finally {
       // 恢复浮球
       isCapturing = false;
@@ -489,18 +512,21 @@
     return new Promise((resolve, reject) => {
       const img = new Image();
       img.onload = () => resolve(img);
-      img.onerror = reject;
+      img.onerror = () => reject(new Error(i18n.t('captureImageFailed')));
       img.src = src;
     });
   }
 
   // ========== Toast 通知 ==========
 
-  function showToast(type, message) {
+  function showToast(type, key, params = {}) {
     removeToast();
+    toastKey = key;
+    toastParams = params;
 
     toastHost = document.createElement('div');
     toastHost.id = 'cwi-toast-host';
+    toastHost.setAttribute('role', type === 'error' ? 'alert' : 'status');
     Object.assign(toastHost.style, {
       position: 'fixed',
       top: '20px',
@@ -534,7 +560,8 @@
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
         box-shadow: 0 4px 12px rgba(0,0,0,0.2);
         animation: toastIn 0.3s ease-out;
-        white-space: nowrap;
+        max-width: calc(100vw - 24px);
+        overflow-wrap: anywhere;
       }
       .toast.fade-out {
         animation: toastOut 0.3s ease-in forwards;
@@ -564,11 +591,17 @@
 
     const toast = document.createElement('div');
     toast.className = 'toast';
-    toast.innerHTML = `<span class="icon">${config.icon}</span><span>${message}</span>`;
+    const icon = document.createElement('span');
+    icon.className = 'icon';
+    icon.textContent = config.icon;
+    icon.setAttribute('aria-hidden', 'true');
+    toastMessage = document.createElement('span');
+    toast.append(icon, toastMessage);
 
     shadow.appendChild(style);
     shadow.appendChild(toast);
     document.body.appendChild(toastHost);
+    refreshLanguage();
 
     // 自动消失
     setTimeout(() => {
@@ -581,6 +614,9 @@
     if (toastHost) {
       toastHost.remove();
       toastHost = null;
+      toastMessage = null;
+      toastKey = null;
+      toastParams = {};
     }
   }
 
@@ -643,7 +679,8 @@
 
   // ========== 初始化 ==========
 
-  function init() {
+  async function init() {
+    await i18n.init();
     // 加载快捷键设置
     loadShortcutSettings();
 
