@@ -57,7 +57,7 @@ jobs:
             -x "*.swo" \
             -x "*~" \
             -x "README.md" \
-            -x "README_EN.md" \
+            -x "README_ZH.md" \
             -x "tests/*" \
             -x "LICENSE"
 

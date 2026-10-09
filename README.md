@@ -1,160 +1,160 @@
-**中文** | [English](README_EN.md)
+**English** | [中文](README_ZH.md)
 
-# CutWebImage - 网页截图工具
+# CutWebImage - Web Screenshot Tool
 
-一款 Chrome 浏览器扩展，点击浮球、拖拽框选网页区域，一键截图复制到剪贴板。
+A Chrome browser extension: click the floating ball, drag to select an area, and capture screenshots to clipboard in one click.
 
-## 功能特性
+## Features
 
-- **悬浮球入口** — 页面右上角常驻绿色浮球，可拖拽移动、自动吸附边缘
-- **矩形框选截图** — 点击浮球后覆盖蒙版，鼠标拖拽画出矩形选区，实时显示尺寸
-- **真实像素截图** — 使用 Chrome `captureVisibleTab` API，像素级精确截图
-- **自动复制到剪贴板** — 截图完成后自动写入剪贴板，可直接粘贴使用
-- **高清支持** — 自动处理 `devicePixelRatio`，Retina 屏幕下截图清晰锐利
-- **历史记录** — 所有截图自动保存，支持查看、再次复制、下载、打开原网址
-- **图片预览** — 点击历史卡片可大图预览，支持复制/下载/跳转原文
-- **批量管理** — 历史列表支持全选、取消全选、批量删除
-- **轻量可靠** — 核心功能零依赖，仅导出功能使用 JSZip 打包；零构建配置，纯原生 JS 实现
-- **可配置快捷键** — 支持开启/关闭快捷键截图（默认 `Ctrl+Shift+C`），可自定义字母键，快捷键开启时可单独控制悬浮球显隐
-- **中英文界面** — 默认跟随浏览器语言，可在 Popup 中切换中文或 English；历史页和网页截图提示同步更新
+- **Floating Ball Entry** — A green floating ball in the top-right corner of any page; draggable with auto edge-snapping
+- **Rectangle Selection** — Click the ball to activate an overlay; drag to draw a rectangle with real-time size display
+- **Pixel-Perfect Capture** — Uses Chrome's `captureVisibleTab` API for pixel-level accurate screenshots
+- **Auto Copy to Clipboard** — Screenshots are automatically copied to clipboard for instant pasting
+- **Retina Support** — Automatically handles `devicePixelRatio` for crisp screenshots on high-DPI displays
+- **History Records** — All screenshots are saved automatically; view, re-copy, download, or open original URL
+- **Image Preview** — Click a history card for large preview; supports copy/download/jump to source
+- **Batch Management** — History list supports select all, deselect all, and batch delete
+- **Lightweight & Reliable** — Zero dependencies for core features; only JSZip used for batch export; pure vanilla JS, no build step required
+- **Configurable Shortcut** — Enable/disable keyboard shortcut (default `Ctrl+Shift+C`); customize the letter key; control floating ball visibility when shortcut is on
+- **English and Chinese UI** — Follows your browser language by default; switch to English or Chinese in the popup, with live updates to history and capture messages
 
-## 安装使用
+## Installation
 
-### 直接下载（推荐）
+### Direct Download (Recommended)
 
-1. 前往 [Releases 页面](https://github.com/fangxiaoxingit/CutWebImage/releases) 下载最新版本的 `.zip` 文件
+1. Go to the [Releases page](https://github.com/fangxiaoxingit/CutWebImage/releases) and download the latest `.zip` file
 
-2. 解压 zip 文件到本地任意目录
+2. Extract the zip file to any local directory
 
-3. 打开 Chrome 浏览器，访问 `chrome://extensions/`
+3. Open Chrome and visit `chrome://extensions/`
 
-4. 开启右上角 **开发者模式**
+4. Enable **Developer mode** in the top-right corner
 
-5. 点击 **加载已解压的扩展程序**，选择解压后的目录
+5. Click **Load unpacked** and select the extracted directory
 
-6. 扩展安装完成，所有网页右上角会出现绿色浮球
+6. Done! A green floating ball will appear on all web pages
 
-### 本地加载（开发）
+### Local Development
 
-1. 克隆本仓库：
+1. Clone this repository:
    ```bash
    git clone https://github.com/fangxiaoxingit/CutWebImage.git
    ```
 
-2. 打开 Chrome 浏览器，访问 `chrome://extensions/`
+2. Open Chrome and visit `chrome://extensions/`
 
-3. 开启右上角 **开发者模式**
+3. Enable **Developer mode** in the top-right corner
 
-4. 点击 **加载已解压的扩展程序**，选择 `CutWebImage` 目录
+4. Click **Load unpacked** and select the `CutWebImage` directory
 
-5. 扩展安装完成，所有网页右上角会出现绿色浮球
+5. Done! A green floating ball will appear on all web pages
 
-### 使用方法
+## Usage
 
-| 操作 | 说明 |
-|------|------|
-| 点击浮球 | 进入截图模式，覆盖浅透明蒙版 |
-| 鼠标拖拽 | 画矩形选区，实时显示宽高尺寸 |
-| 松开鼠标 | 截图自动复制到剪贴板，Toast 提示成功 |
-| 拖拽浮球 | 移动浮球位置，松手自动吸附边缘 |
-| `Ctrl+Shift+C` | 快捷键进入截图模式（需在 Popup 中开启） |
-| 按 Esc | 取消截图，退出截图模式 |
-| 点击工具栏图标 | 打开 Popup 面板，管理快捷键设置和历史记录 |
+| Action | Description |
+|--------|-------------|
+| Click floating ball | Enter capture mode with a semi-transparent overlay |
+| Drag mouse | Draw a rectangle selection with real-time size display |
+| Release mouse | Screenshot auto-copies to clipboard with a Toast notification |
+| Drag floating ball | Move the ball; auto-snaps to nearest edge on release |
+| `Ctrl+Shift+C` | Keyboard shortcut to enter capture mode (must be enabled in Popup) |
+| Press Esc | Cancel capture and exit capture mode |
+| Click toolbar icon | Open Popup panel to manage shortcut settings and history |
 
-### 快捷键设置
+### Shortcut Settings
 
-点击工具栏图标打开 Popup，可配置：
+Click the toolbar icon to open the Popup and configure:
 
-| 设置项 | 说明 |
-|--------|------|
-| 快捷键开关 | 默认关闭，开启后在任意网页按快捷键即可进入截图模式 |
-| 自定义字母键 | 默认 `C`，可修改为 A-Z 任意字母，快捷键格式为 `Ctrl+Shift+[字母]` |
-| 悬浮球显示 | 仅在快捷键开启时可见，可单独控制悬浮球显隐 |
+| Setting | Description |
+|---------|-------------|
+| Shortcut toggle | Disabled by default; once enabled, press the shortcut on any page to enter capture mode |
+| Custom letter key | Default `C`; can be changed to any letter A–Z; shortcut format: `Ctrl+Shift+[letter]` |
+| Floating ball visibility | Only visible when shortcut is enabled; allows separate control of ball show/hide |
 
-> 快捷键关闭时，悬浮球强制显示，确保始终有截图入口。
+> When the shortcut is disabled, the floating ball is always shown to ensure a capture entry point is available.
 
-### 语言设置
+### Language Settings
 
-点击工具栏图标，在 Popup 的语言下拉框中选择：
+Click the extension's toolbar icon and use the language selector in the popup:
 
-| 选项 | 行为 |
-|------|------|
-| 跟随浏览器（默认） | 按浏览器语言偏好顺序选择中文或英文；未匹配时参考浏览器首选语言和界面语言，仍不支持则使用英文 |
-| 中文 | 固定使用简体中文，包括历史记录、截图提示和设置面板 |
-| English | 固定使用英文，包括历史记录、截图提示和设置面板 |
+| Option | Behavior |
+|--------|----------|
+| Follow browser (default) | Uses the first supported browser language preference, then checks the browser's primary and UI language; falls back to English if none is supported |
+| 中文 | Always uses Simplified Chinese for the popup, history page, and capture messages |
+| English | Always uses English for the popup, history page, and capture messages |
 
-手动选择保存在当前浏览器的扩展本地设置中，重新打开面板或重启浏览器后仍然有效。选择“跟随浏览器”可恢复自动识别；`zh-CN`、`zh-TW`、`zh-HK` 等中文语言均使用简体中文界面。已有历史截图、选中状态和快捷键设置不会因切换语言而改变，原网页标题也保留原文。
+Your manual choice is saved locally in the extension's settings for this browser and persists across popup openings and browser restarts. Select **Follow browser** to restore automatic detection. Chinese variants such as `zh-CN`, `zh-TW`, and `zh-HK` all use the Simplified Chinese interface. Switching languages preserves screenshots, selected history items, and shortcut settings. Captured page titles retain their original text.
 
-Chrome 扩展管理页中的扩展名称和描述由 Chrome 根据浏览器界面语言显示，不受 Popup 手动选择影响。更新扩展后，请在 `chrome://extensions/` 重新加载扩展，并刷新已有网页，以加载新增的语言模块。
+Chrome controls the extension name and description on its extensions management page using the browser's UI language; the popup's manual language setting applies to the extension's own interface. After updating, reload the extension at `chrome://extensions/` and refresh existing web pages to load the new language module.
 
-## 项目结构
+## Project Structure
 
 ```
 CutWebImage/
-├── manifest.json                  # Chrome 扩展 Manifest V3 配置
-├── _locales/                      # Chrome 扩展名称和描述的中英文语言包
+├── manifest.json                  # Chrome Extension Manifest V3 config
+├── _locales/                      # English and Chinese extension name and description
 ├── .github/
 │   └── workflows/
-│       └── package.yml            # GitHub Actions 自动打包工作流
+│       └── package.yml            # GitHub Actions auto-package workflow
 ├── background/
-│   └── service-worker.js          # Service Worker（截图 + IndexedDB 存储）
+│   └── service-worker.js          # Service Worker (screenshot + IndexedDB storage)
 ├── content/
-│   ├── content.js                 # 内容脚本（浮球、蒙版、框选、裁剪、快捷键、Toast）
-│   └── content.css                # 全局注入样式
+│   ├── content.js                 # Content script (floating ball, overlay, selection, crop, shortcut, toast)
+│   └── content.css                # Global injected styles
 ├── history/
-│   ├── history.html               # 历史记录页面
-│   ├── history.css                # 历史页面样式
-│   └── history.js                 # 历史页面逻辑
+│   ├── history.html               # History records page
+│   ├── history.css                # History page styles
+│   └── history.js                 # History page logic
 ├── lib/
-│   ├── i18n.js                    # 共享中英文文案、语言识别与设置同步
-│   ├── storage.js                 # IndexedDB 存储模块
-│   └── jszip.min.js               # JSZip 库（批量导出打包）
+│   ├── i18n.js                    # Shared translations, language detection, and settings sync
+│   ├── storage.js                 # IndexedDB storage module
+│   └── jszip.min.js               # JSZip library (batch export)
 ├── popup/
-│   ├── popup.html                 # 工具栏弹窗（含快捷键设置 UI）
-│   ├── popup.css                  # 弹窗样式
-│   └── popup.js                   # 弹窗逻辑（历史记录 + 快捷键设置）
+│   ├── popup.html                 # Toolbar popup (with shortcut settings UI)
+│   ├── popup.css                  # Popup styles
+│   └── popup.js                   # Popup logic (history + shortcut settings)
 └── icons/
     ├── icon16.png
     ├── icon48.png
     └── icon128.png
 ```
 
-## 技术要点
+## Technical Highlights
 
-- **Manifest V3** — 使用最新的 Chrome 扩展规范
-- **Shadow DOM** — 浮球和 Toast 使用 Shadow DOM 封装，防止与目标网站 CSS 互相污染
-- **captureVisibleTab** — Chrome 原生截图 API，像素级精确，无需第三方库
-- **IndexedDB** — 存储截图 Blob 数据，支持大量图片存储，不受 localStorage 容量限制
-- **事件拦截防滚动** — 截图模式通过拦截 wheel/touch/keyboard 事件阻止滚动，不修改 `overflow`，兼容所有页面布局
+- **Manifest V3** — Uses the latest Chrome extension specification
+- **Shadow DOM** — Floating ball and Toast use Shadow DOM encapsulation to prevent CSS conflicts with host pages
+- **captureVisibleTab** — Chrome native screenshot API; pixel-accurate, no third-party libraries required
+- **IndexedDB** — Stores screenshot Blob data; supports large-scale image storage without localStorage limits
+- **Event-based scroll prevention** — Capture mode blocks scrolling via wheel/touch/keyboard event interception without modifying `overflow`, compatible with all page layouts
 
-## 隐私说明
+## Privacy
 
-CutWebImage 尊重并保护您的隐私：
+CutWebImage respects and protects your privacy:
 
-- **纯本地存储** — 所有截图数据仅保存在您浏览器的 IndexedDB 中，**不会上传到任何服务器**
-- **零数据收集** — 扩展不收集任何用户数据、不跟踪用户行为
-- **无外部通信** — 扩展不访问任何外部网络服务或第三方接口
-- **数据可控** — 截图历史记录仅存储在本地浏览器中，卸载扩展或清除浏览器数据将自动删除所有记录
+- **Local-only storage** — All screenshot data is saved only in your browser's IndexedDB; **never uploaded to any server**
+- **Zero data collection** — The extension collects no user data and does not track behavior
+- **No external communication** — The extension does not access any external services or third-party APIs
+- **Full data control** — Screenshot history is stored locally only; uninstalling the extension or clearing browser data removes all records
 
-### 权限说明
+### Permissions
 
-| 权限 | 用途 |
-|------|------|
-| `activeTab` | 仅用于截取当前页面可见区域 |
-| `clipboardWrite` | 仅用于将截图图片写入系统剪贴板 |
-| `unlimitedStorage` | 用于本地 IndexedDB 存储截图历史 |
-| `storage` | 用于存储界面语言、快捷键开关、自定义字母键、悬浮球显隐等用户设置 |
-| `<all_urls>` | 用于在所有网页上注入浮球和截图功能 |
+| Permission | Purpose |
+|------------|---------|
+| `activeTab` | Only used to capture the visible area of the current page |
+| `clipboardWrite` | Only used to write screenshot images to the system clipboard |
+| `unlimitedStorage` | Used for local IndexedDB storage of screenshot history |
+| `storage` | Used to store user settings: interface language, shortcut toggle, custom letter key, floating ball visibility |
+| `<all_urls>` | Used to inject the floating ball and capture functionality on all web pages |
 
-## 开发验证
+## Development Checks
 
-项目无需构建。语言识别、手动选择保存、跨页面同步和存储失败回退的自动化测试可用 Node.js 运行：
+No build step is required. Run the automated checks for browser language detection, saved preferences, cross-page updates, and storage failure fallback with Node.js:
 
 ```bash
 node --test tests/*.test.cjs
 ```
 
-在 Chrome 加载扩展后，可分别检查中文和英文下的 Popup、快捷键修改弹窗、历史页空状态、图片预览、批量操作及网页截图提示。
+After loading the extension in Chrome, check the popup, shortcut editor, empty history page, image preview, batch actions, and capture messages in both English and Chinese.
 
 ## License
 
